@@ -14,59 +14,59 @@ namespace NAU7802 {
     let deviceAddress = 42
     let PU_CTRL = 0
     let CTRL1 = 1
-let CTRL2 = 2
-let OCAL1_B2 = 3
-let OCAL1_B1 = 4
-let OCAL1_B0 = 5
-let GCAL1_B3 = 6
-let GCAL1_B2 = 7
-let GCAL1_B1 = 8
-let GCAL1_B0 = 9
-let OCAL2_B2 = 10
-let OCAL2_B1 = 11
-let OCAL2_B0 = 12
-let GCAL2_B3 = 13
-let GCAL2_B2 = 14
-let GCAL2_B1 = 15
-let GCAL2_B0 = 16
-let I2C_Control = 17
-let ADCO_B2 = 18
-let ADCO_B1 = 19
-let ADCO_B0 = 20
-// shared with OTP_B1
-let ADC = 21
-let OTP_B1 = 21
-let OTP_B0 = 22
-let PGA_PWR = 28
-let DEVICE_REV = 31
-//register bits
-let PU_CTRL_RR = 0
-let PU_CTRL_PUD = 1
-let PU_CTRL_PUA = 2
-let PU_CTRL_PUR = 3
-let PU_CTRL_CS = 4
-let PU_CTRL_CR = 5
-let PU_CTRL_OSCS = 6
-let PU_CTRL_AVDDS = 7
-let CTRL1_GAIN = 2
-let CTRL1_VLDO = 5
-let CTRL1_CRP = 7
-let CTRL2_CALMOD = 1
-let CTRL2_CALS = 2
-let CTRL2_CRS = 6
-let CTRL2_CAL_ERROR = 3
-let CTRL2_CHS = 7
-let PGA_PWR_PGA_CURR = 0
-let PGA_PWR_ADC_CURR = 2
-let PGA_CHIP_DIS = 0
-let PGA_INV = 3
-let PGA_PWR_PGA_CAP_EN = 7
-let SPS_10 = 0
-let CHANNEL_12 = 0
-// status codes
-let CAL_FAILURE = 2
-let CAL_IN_PROGRESS = 1
-let CAL_SUCCESS = 0
+    let CTRL2 = 2
+    let OCAL1_B2 = 3
+    let OCAL1_B1 = 4
+    let OCAL1_B0 = 5
+    let GCAL1_B3 = 6
+    let GCAL1_B2 = 7
+    let GCAL1_B1 = 8
+    let GCAL1_B0 = 9
+    let OCAL2_B2 = 10
+    let OCAL2_B1 = 11
+    let OCAL2_B0 = 12
+    let GCAL2_B3 = 13
+    let GCAL2_B2 = 14
+    let GCAL2_B1 = 15
+    let GCAL2_B0 = 16
+    let I2C_Control = 17
+    let ADCO_B2 = 18
+    let ADCO_B1 = 19
+    let ADCO_B0 = 20
+    // shared with OTP_B1
+    let ADC = 21
+    let OTP_B1 = 21
+    let OTP_B0 = 22
+    let PGA_PWR = 28
+    let DEVICE_REV = 31
+    //register bits
+    let PU_CTRL_RR = 0
+    let PU_CTRL_PUD = 1
+    let PU_CTRL_PUA = 2
+    let PU_CTRL_PUR = 3
+    let PU_CTRL_CS = 4
+    let PU_CTRL_CR = 5
+    let PU_CTRL_OSCS = 6
+    let PU_CTRL_AVDDS = 7
+    let CTRL1_GAIN = 2
+    let CTRL1_VLDO = 5
+    let CTRL1_CRP = 7
+    let CTRL2_CALMOD = 1
+    let CTRL2_CALS = 2
+    let CTRL2_CRS = 6
+    let CTRL2_CAL_ERROR = 3
+    let CTRL2_CHS = 7
+    let PGA_PWR_PGA_CURR = 0
+    let PGA_PWR_ADC_CURR = 2
+    let PGA_CHIP_DIS = 0
+    let PGA_INV = 3
+    let PGA_PWR_PGA_CAP_EN = 7
+    let SPS_10 = 0
+    let CHANNEL_12 = 0
+    // status codes
+    let CAL_FAILURE = 2
+    let CAL_IN_PROGRESS = 1
+    let CAL_SUCCESS = 0
 
     //% blockId="NAU7802_UP" block="power up"
     //% weight=90 blockGap=8
@@ -99,8 +99,9 @@ let CAL_SUCCESS = 0
 
     //% blockId="NAU7802_SET_OFFSET" block="set offset %offset"
     //% weight=80 blockGap=8
-    export function set_offset(offset: number) {
-    
+    export function set_offset(newZeroOffset: number) {
+        // line 299
+        _zeroOffset = newZeroOffset
     }
 
     //% blockId="NAU7802_GET_OFFSET" block="get offset"
@@ -113,19 +114,20 @@ let CAL_SUCCESS = 0
     //% blockId="NAU7802_SET_SCALE" block="set scale %scale"
     //% weight=80 blockGap=8
     export function set_scale(scale: number) {
-      SCALE = scale
+        // line 319
+        _calibrationFactor = newCalFactor
     }
 
     //% blockId="NAU7802_GET_SCALE" block="get scale"
     //% weight=80 blockGap=8
     export function get_scale(): number {
-      return SCALE
+      return _calibrationFactor
     }
 
     //% blockId="NAU7802_TARE" block="tare %times"
     //% weight=80 blockGap=8
     export function tare(times: number) {
-    
+    /**************** TO DO **********************/
     }
 
     //% blockId="NAU7802_GET_UNITS" block="get N averaged final scaled value %times"
@@ -185,21 +187,13 @@ let CAL_SUCCESS = 0
     }
     let result = true
     result = result && reset()
-    //serial.writeLine("init1 =" + result)
     result = result && powerUp()
-    //serial.writeLine("init2 =" + result)
     result = result && setLDO(LDO_3V3)
-    //serial.writeLine("init3 =" + result)
     result = result && setGain(GAIN_128)
-    //serial.writeLine("init4 =" + result)
     result = result && setSampleRate(SPS_10)
-    //serial.writeLine("init5 =" + result)
     result = result && setRegister(ADC, 0x30)
-    //serial.writeLine("init6 =" + result)
     result = result && setBit(PGA_PWR_PGA_CAP_EN, PGA_PWR)
-    //serial.writeLine("init7 =" + result)
     result = result && calibrateAFE()
-    //serial.writeLine("init8 =" + result)
     return result
    }
     
@@ -252,11 +246,65 @@ let CAL_SUCCESS = 0
         let revisionCode = getRegister(DEVICE_REV)
         return (revisionCode)
     }
+    function getWeight(allowNegativeWeights: boolean, samplesToTake: number) {
+        // line 330
+        let onScale = getAverage(samplesToTake)
+        if (!(allowNegativeWeights)) {
+            if (onScale < _zeroOffset) {
+                onScale = _zeroOffset
+            }
+        }
+        return (onScale - _zeroOffset) / _calibrationFactor
+    }
+    // Test for ACK - dummy for now, ubit can't do this
+    function isConnected() {
+        // line 69
+        return true
+    }
+    function reset() {
+        // line 190
+        setBit(PU_CTRL_RR, PU_CTRL)
+        basic.pause(1)
+        return clearBit(PU_CTRL_RR, PU_CTRL)
+    }
     function setBit(bitNumber: number, registerAddress: number) {
     // line 360
         let value = getRegister(registerAddress)
         value |= (1 << bitNumber)
         return setRegister(registerAddress, value)
+    }
+    function setCalibrationFactor(newCalFactor: number) {
+        // line 319
+        _calibrationFactor = newCalFactor
+    }
+    function setChannel(channelNumber: number) {
+        // line 155
+        let CHANNEL_1: null = null
+        if (channelNumber == CHANNEL_1) {
+            // Channel 1 default
+            return clearBit(CTRL2_CHS, CTRL2)
+         } else {
+            return setBit(CTRL2_CHS, CTRL2)
+        }
+    }
+    function setIntPolarityHigh() {
+        // line 348
+        return clearBit(CTRL1_CRP, CTRL1)
+    }
+    function setIntPolarityLow() {
+        // line 353
+        return setBit(CTRL1_CRP, CTRL1)
+    }
+    function setLDO(ldoValue: number) {
+        // line 199
+        if (ldoValue > 0b111) {
+            ldoValue = 0b111
+        }
+        let value = getRegister(CTRL1)
+        value &= 0b11000111
+        value |= ldoValue << 3
+        setRegister(CTRL1, value)
+        return setBit(PU_CTRL_AVDDS, PU_CTRL)
     }
     function setRegister(registerAddress: number, value: number) {
     // line 401
@@ -266,9 +314,30 @@ let CAL_SUCCESS = 0
         pins.i2cWriteBuffer(deviceAddress, buf)
         return true
     }
-    // Test for ACK - dummy for now, can ubit do this?
-    function isConnected() {
-        // line 69
-        return true
-}
+    function setSampleRate(rate: number) {
+        // line 142
+        if (rate > 0b111) {
+            rate = 0b111
+         }
+        let value = getRegister(CTRL2)
+        value &= 0b10001111 ///clear CRS bits
+        value |= rate << 4  //Mask in new CRS bits
+        return setRegister(CTRL2, value)
+    }
+    function waitForCalibrateAFE (timeout_ms: number) {
+        // line 119
+        let t_begin = input.runningTime()
+        let cal_ready = 0
+        while ((cal_ready = getBit(CTRL2_CALS, CTRL2)) == CAL_IN_PROGRESS) {
+            if ((timeout_ms > 0) && ((input.runningTime() - t_begin) > timeout_ms)) {
+                break;
+            }
+            basic.pause(1)
+        }
+        if (cal_ready == CAL_SUCCESS) {
+            return true
+        }
+        return false
+    }
+    
 }
