@@ -5,7 +5,6 @@
 
 //% weight=20 color=#ff8f3f icon="\uf017" block="NAU7802"
 namespace NAU7802 {
-    let available = true
     let _zeroOffset:any = 1
     let _calibrationFactor:any = 1
     let LDO_3V3 = 4
@@ -200,6 +199,14 @@ namespace NAU7802 {
    }
     
     /******** INTERNAL FUNCTIONS *****************/
+    function available() {
+        //line 77
+        if (getBit(PU_CTRL_CR, PU_CTRL)) {
+         return true
+        } else {
+            return false
+        }
+    }
     function beginCalibrateAFE() {
         // line 94
         setBit(CTRL2_CALS, CTRL2)
