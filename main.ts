@@ -157,7 +157,7 @@ namespace NAU7802 {
                 if (samplesAquired == averageAmount) {
                     break;
                 }
-            } else if (input.runningTime() - startTime > 1000) {
+            } else if (input.runningTime() - startTime > 5000) {
                 return 0
             }
             basic.pause(1) 
