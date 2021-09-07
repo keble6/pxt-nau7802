@@ -6,14 +6,14 @@
 //% weight=20 color=#b77ff0 icon="\uf017" block="NAU7802"
 namespace NAU7802 {
     let _zeroOffset:any = 1
-let _calibrationFactor:any = 1
-let LDO_3V3 = 4
-let GAIN_128 = 7
-let CHANNEL_2 = 1
-// I2C addresses
-let deviceAddress = 42
-let PU_CTRL = 0
-let CTRL1 = 1
+    let _calibrationFactor:any = 1
+    let LDO_3V3 = 4
+    let GAIN_128 = 7
+    let CHANNEL_2 = 1
+    // I2C addresses
+    let deviceAddress = 42
+    let PU_CTRL = 0
+    let CTRL1 = 1
 let CTRL2 = 2
 let OCAL1_B2 = 3
 let OCAL1_B1 = 4
@@ -105,8 +105,9 @@ let CAL_SUCCESS = 0
 
     //% blockId="NAU7802_GET_OFFSET" block="get offset"
     //% weight=80 blockGap=8
-    export function get_offset(): number {
-
+    export function getZeroOffset: number {
+        // line 304
+        return _zeroOffset
     }
 
     //% blockId="NAU7802_SET_SCALE" block="set scale %scale"
@@ -129,14 +130,14 @@ let CAL_SUCCESS = 0
 
     //% blockId="NAU7802_GET_UNITS" block="get N averaged final scaled value %times"
     //% weight=80 blockGap=8
-    export function get_units(times: number): number {
-      
-    }
-
-    //% blockId="NAU7802_GET_VALUE" block="get N averaged offsetted data %times"
-    //% weight=80 blockGap=8
-    export function get_value(times: number): number {
-       
+    export function getWeight(samplesToTake: number): number {
+      let onScale = getAverage(samplesToTake)
+        if (!(allowNegativeWeights)) {
+            if (onScale < _zeroOffset) {
+                onScale = _zeroOffset
+            }
+        }
+        return (onScale - _zeroOffset) / _calibrationFactor
     }
 
     //% blockId="NAU7802_READ_AVERAGE" block="read N averaged raw data %times"
@@ -202,6 +203,55 @@ let CAL_SUCCESS = 0
     return result
    }
     
+    /******** INTERNAL FUNCTIONS *****************/
+    function beginCalibrateAFE() {
+        // line 94
+        setBit(CTRL2_CALS, CTRL2)
+    }
+    function calculateCalibrationFactor(weightOnScale: number, averageAmount: number) {
+     // line 310
+        let onScale = getAverage(averageAmount)
+        let newCalFactor = (onScale - _zeroOffset) / weightOnScale
+        setCalibrationFactor(newCalFactor)
+    }
+
+    function calculateZeroOffset(averageAmount: number) {
+     // line 293
+        setZeroOffset(getAverage(averageAmount))
+    }
+    function calibrateAFE() {
+        // line 86
+         beginCalibrateAFE()
+        return waitForCalibrateAFE(1000)
+    }
+    function clearBit(bitNumber: number, registerAddress: number) {
+        // line 368
+        let value = getRegister(registerAddress)
+        value &= ~(1 << bitNumber)
+        return setRegister(registerAddress, value)
+    }
+    function getBit(bitNumber: number, registerAddress: number) {
+    // line 376
+        let value = getRegister(registerAddress)
+        value &= (1 << bitNumber)
+        value = value >>> bitNumber // added because original returns a number, not a boolean!
+        return value
+    }
+    function getCalibrationFactor() {
+        // line324
+        return _calibrationFactor
+    }
+    function getRegister (registerAddress: number) {
+        // line 384
+        pins.i2cWriteNumber(deviceAddress,registerAddress,
+            NumberFormat.UInt8BE,false)
+        return pins.i2cReadNumber(deviceAddress, NumberFormat.UInt8BE, false)
+    }
+    function getRevisionCode () {
+        // line 228
+        let revisionCode = getRegister(DEVICE_REV)
+        return (revisionCode)
+    }
     function setBit(bitNumber: number, registerAddress: number) {
     // line 360
         let value = getRegister(registerAddress)
@@ -216,17 +266,9 @@ let CAL_SUCCESS = 0
         pins.i2cWriteBuffer(deviceAddress, buf)
         return true
     }
-    function getBit(bitNumber: number, registerAddress: number) {
-    // line 376
-        let value = getRegister(registerAddress)
-        value &= (1 << bitNumber)
-        value = value >>> bitNumber // added because original returns a number, not a boolean!
-        return value
+    // Test for ACK - dummy for now, can ubit do this?
+    function isConnected() {
+        // line 69
+        return true
 }
-    function getRegister (registerAddress: number) {
-        // line 384
-        pins.i2cWriteNumber(deviceAddress,registerAddress,
-            NumberFormat.UInt8BE,false)
-        return pins.i2cReadNumber(deviceAddress, NumberFormat.UInt8BE, false)
-    }
 }
