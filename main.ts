@@ -5,6 +5,7 @@
 
 //% weight=20 color=#ff8f3f icon="\uf017" block="NAU7802"
 namespace NAU7802 {
+    let available = true
     let _zeroOffset:any = 1
     let _calibrationFactor:any = 1
     let LDO_3V3 = 4
@@ -113,7 +114,7 @@ namespace NAU7802 {
 
     //% blockId="NAU7802_SET_SCALE" block="set scale %scale"
     //% weight=80 blockGap=8
-    export function set_scale(scale: number): void {
+    export function set_scale(newCalFactor: number): void {
         // line 319
         _calibrationFactor = newCalFactor
     }
@@ -135,11 +136,11 @@ namespace NAU7802 {
     //% weight=80 blockGap=8
     export function getWeight(samplesToTake: number): number {
       let onScale = getAverage(samplesToTake)
-        if (!(allowNegativeWeights)) {
+        /*if (!(allowNegativeWeights)) {
             if (onScale < _zeroOffset) {
                 onScale = _zeroOffset
             }
-        }
+        }*/
         return (onScale - _zeroOffset) / _calibrationFactor
     }
 
@@ -288,6 +289,16 @@ namespace NAU7802 {
             return setBit(CTRL2_CHS, CTRL2)
         }
     }
+    function setGain (gainValue: number) {
+        // line 215
+        if (gainValue > 7) {
+            gainValue = 7
+        }
+        let value = getRegister(CTRL1)
+        value &= 0b11111000
+        value |= gainValue
+        return setRegister(CTRL1, value)
+    }
     function setIntPolarityHigh() {
         // line 348
         return clearBit(CTRL1_CRP, CTRL1)
@@ -324,6 +335,10 @@ namespace NAU7802 {
         value &= 0b10001111 ///clear CRS bits
         value |= rate << 4  //Mask in new CRS bits
         return setRegister(CTRL2, value)
+    }
+    function setZeroOffset(newZeroOffset: number) {
+        // line 299
+        _zeroOffset = newZeroOffset
     }
     function waitForCalibrateAFE (timeout_ms: number) {
         // line 119
