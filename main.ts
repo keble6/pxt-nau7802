@@ -106,7 +106,7 @@ namespace NAU7802 {
 
     //% blockId="NAU7802_GET_OFFSET" block="get offset"
     //% weight=80 blockGap=8
-    export function getZeroOffset: number {
+    export function getZeroOffset(): number {
         // line 304
         return _zeroOffset
     }
