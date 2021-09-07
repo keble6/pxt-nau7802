@@ -255,17 +255,7 @@ namespace NAU7802 {
         let revisionCode = getRegister(DEVICE_REV)
         return (revisionCode)
     }
-    function getWeight(allowNegativeWeights: boolean, samplesToTake: number) {
-        // line 330
-        let onScale = getAverage(samplesToTake)
-        if (!(allowNegativeWeights)) {
-            if (onScale < _zeroOffset) {
-                onScale = _zeroOffset
-            }
-        }
-        return (onScale - _zeroOffset) / _calibrationFactor
-    }
-    // Test for ACK - dummy for now, ubit can't do this
+       // Test for ACK - dummy for now, ubit can't do this
     function isConnected() {
         // line 69
         return true
