@@ -3,7 +3,7 @@
 * Based on HX711 package from https://github.com/daferdur/pxt-myhx711
 */
 
-//% weight=20 color=#b77ff0 icon="\uf017" block="NAU7802"
+//% weight=20 color=#ff8f3f icon="\uf017" block="NAU7802"
 namespace NAU7802 {
     let _zeroOffset:any = 1
     let _calibrationFactor:any = 1
@@ -70,7 +70,7 @@ namespace NAU7802 {
 
     //% blockId="NAU7802_UP" block="power up"
     //% weight=90 blockGap=8
-    export function powerUp() {
+    export function powerUp(): boolean {
         //line 164 in arduino code
         setBit(PU_CTRL_PUD, PU_CTRL) //power up digital
         setBit(PU_CTRL_PUA, PU_CTRL) //power up analog
@@ -91,7 +91,7 @@ namespace NAU7802 {
 
     //% blockId="NAU7802_DOWN" block="power down"
     //% weight=90 blockGap=8
-    export function powerDown() {
+    export function powerDown(): boolean {
         // line 183
         clearBit(PU_CTRL_PUD, PU_CTRL)
         return clearBit(PU_CTRL_PUA, PU_CTRL)
@@ -99,7 +99,7 @@ namespace NAU7802 {
 
     //% blockId="NAU7802_SET_OFFSET" block="set offset %offset"
     //% weight=80 blockGap=8
-    export function set_offset(newZeroOffset: number) {
+    export function set_offset(newZeroOffset: number): void {
         // line 299
         _zeroOffset = newZeroOffset
     }
@@ -113,7 +113,7 @@ namespace NAU7802 {
 
     //% blockId="NAU7802_SET_SCALE" block="set scale %scale"
     //% weight=80 blockGap=8
-    export function set_scale(scale: number) {
+    export function set_scale(scale: number): void {
         // line 319
         _calibrationFactor = newCalFactor
     }
@@ -126,8 +126,9 @@ namespace NAU7802 {
 
     //% blockId="NAU7802_TARE" block="tare %times"
     //% weight=80 blockGap=8
-    export function tare(times: number) {
+    export function tare(times: number): boolean {
     /**************** TO DO **********************/
+        return true
     }
 
     //% blockId="NAU7802_GET_UNITS" block="get N averaged final scaled value %times"
@@ -179,7 +180,7 @@ namespace NAU7802 {
 
     //% blockId="NAU7802_BEGIN" block="begin"
     //% weight=80 blockGap=8
-    export function begin() {
+    export function begin(): boolean {
         if (isConnected() == false) {
             if (isConnected() == false) { //2nd try
                 return false
